@@ -1,0 +1,1 @@
+module github.com/xiaobudongzhang/micro-inventory-srv
