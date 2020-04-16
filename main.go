@@ -5,16 +5,17 @@ import (
 
 	"github.com/xiaobudongzhang/micro-inventory-srv/handler"
 
-	"github.com/micro/go-micro/config/source/cli"
-	"github.com/micro/go-micro/registry"
-	"github.com/micro/go-micro/registry/etcd"
+	"github.com/micro/cli/v2"
 	"github.com/micro/go-micro/v2"
-	log "github.com/micro/go-micro/v2/logger"
+
+	"github.com/micro/go-micro/v2/registry"
+	"github.com/micro/go-micro/v2/registry/etcd"
+	log "github.com/micro/go-micro/v2/util/log"
 	"github.com/xiaobudongzhang/micro-basic/basic"
 	"github.com/xiaobudongzhang/micro-basic/config"
 	"github.com/xiaobudongzhang/micro-inventory-srv/model"
 
-	inventory "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
+	proto "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	// New Service
 	service := micro.NewService(
 		micro.Name("mu.micro.book.service.inventory"),
-		micro.Register(micReg),
+		micro.Registry(micReg),
 		micro.Version("latest"),
 	)
 
@@ -38,7 +39,7 @@ func main() {
 	)
 
 	// Register Handler
-	inventory.RegisterInventoryHandler(service.Server(), new(handler.Service))
+	proto.RegisterInventoryHandler(service.Server(), new(handler.Service))
 
 	// Register Struct as Subscriber
 	//micro.RegisterSubscriber("mu.micro.book.service.inventory", service.Server(), new(subscriber.Inventory))

@@ -5,14 +5,15 @@ package mu_micro_book_service_inventory
 
 import (
 	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
 	math "math"
-)
 
-import (
+	proto "github.com/golang/protobuf/proto"
+
 	context "context"
-	client "github.com/micro/go-micro/client"
-	server "github.com/micro/go-micro/server"
+
+	client "github.com/micro/go-micro/v2/client"
+
+	server "github.com/micro/go-micro/v2/server"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

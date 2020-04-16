@@ -3,46 +3,49 @@ package handler
 import (
 	"context"
 
-	log "github.com/micro/go-micro/v2/logger"
-
-	inventory "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
+	"github.com/micro/go-micro/v2/util/log"
+	inv "github.com/xiaobudongzhang/micro-inventory-srv/model/inventory"
+	proto "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
 )
 
-type Inventory struct{}
+var (
+	invService inv.Service
+)
 
-// Call is a single request handler called via client.Call or the generated client code
-func (e *Inventory) Call(ctx context.Context, req *inventory.Request, rsp *inventory.Response) error {
-	log.Info("Received Inventory.Call request")
-	rsp.Msg = "Hello " + req.Name
+type Service struct {
+}
+
+// Init 初始化handler
+func Init() {
+	invService, _ = inv.GetService()
+}
+
+// Sell 库存销存
+func (e *Service) Sell(ctx context.Context, req *proto.Request, rsp *proto.Response) (err error) {
+	id, err := invService.Sell(req.BookId, req.UserId)
+	if err != nil {
+		log.Logf("[Sell] 销存失败，bookId：%d，userId: %d，%s", req.BookId, req.UserId, err)
+		rsp.Success = false
+		return
+	}
+
+	rsp.InvH = &proto.InvHistory{
+		Id: id,
+	}
+
+	rsp.Success = true
 	return nil
 }
 
-// Stream is a server side stream handler called via client.Stream or the generated client code
-func (e *Inventory) Stream(ctx context.Context, req *inventory.StreamingRequest, stream inventory.Inventory_StreamStream) error {
-	log.Infof("Received Inventory.Stream request with count: %d", req.Count)
-
-	for i := 0; i < int(req.Count); i++ {
-		log.Infof("Responding: %d", i)
-		if err := stream.Send(&inventory.StreamingResponse{
-			Count: int64(i),
-		}); err != nil {
-			return err
-		}
+// Confirm 库存销存 确认
+func (e *Service) Confirm(ctx context.Context, req *proto.Request, rsp *proto.Response) (err error) {
+	err = invService.Confirm(req.HistoryId, int(req.HistoryState))
+	if err != nil {
+		log.Logf("[Confirm] 确认销存失败，%s", err)
+		rsp.Success = false
+		return
 	}
 
+	rsp.Success = true
 	return nil
-}
-
-// PingPong is a bidirectional stream handler called via client.Stream or the generated client code
-func (e *Inventory) PingPong(ctx context.Context, stream inventory.Inventory_PingPongStream) error {
-	for {
-		req, err := stream.Recv()
-		if err != nil {
-			return err
-		}
-		log.Infof("Got ping %v", req.Stroke)
-		if err := stream.Send(&inventory.Pong{Stroke: req.Stroke}); err != nil {
-			return err
-		}
-	}
 }

@@ -4,6 +4,6 @@ import (
 	"github.com/xiaobudongzhang/micro-inventory-srv/model/inventory"
 )
 
-func ()  {
+func Init() {
 	inventory.Init()
 }
