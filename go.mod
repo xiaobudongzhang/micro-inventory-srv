@@ -2,9 +2,9 @@ module github.com/xiaobudongzhang/micro-inventory-srv
 
 go 1.14
 
-replace github.com/xiaobudongzhang/micro-basic => /root/microdemo/micro-basic
+replace github.com/xiaobudongzhang/micro-basic => /data/ndemo/micro-basic
 
-replace github.com/xiaobudongzhang/micro-inventory-srv => /root/microdemo/micro-inventory-srv
+replace github.com/xiaobudongzhang/micro-inventory-srv => /data/ndemo/micro-inventory-srv
 
 require (
 	github.com/golang/protobuf v1.4.0
