@@ -10,7 +10,9 @@ import (
 )
 
 func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
+	log.Log("Sell")
 	tx, err := db.GetDB().Begin()
+
 	if err != nil {
 		log.Logf("事务开启失败", err.Error())
 		return
