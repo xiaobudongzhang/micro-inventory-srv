@@ -5,8 +5,8 @@ import (
 
 	"github.com/micro/go-micro/util/log"
 	"github.com/xiaobudongzhang/micro-basic/common"
-	"github.com/xiaobudongzhang/micro-basic/db"
 	proto "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
+	"github.com/xiaobudongzhang/micro-plugins/db"
 )
 
 func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
