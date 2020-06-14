@@ -18,6 +18,10 @@ import (
 	"github.com/xiaobudongzhang/micro-inventory-srv/model"
 
 	proto "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
+
+	openTrace "github.com/micro/go-plugins/wrapper/trace/opentracing/v2"
+	"github.com/opentracing/opentracing-go"
+	tracer "github.com/xiaobudongzhang/micro-plugins/tracer/myjaeger"
 )
 
 var (
@@ -31,14 +35,21 @@ type appCfg struct {
 
 func main() {
 	initCfg()
-
 	micReg := etcd.NewRegistry(registryOptions)
+
+	t, io, err1 := tracer.NewTracer(cfg.Name, "")
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+	defer io.Close()
+	opentracing.SetGlobalTracer(t)
 
 	// New Service
 	service := micro.NewService(
 		micro.Name("mu.micro.book.service.inventory"),
 		micro.Registry(micReg),
 		micro.Version("latest"),
+		micro.WrapHandler(openTrace.NewHandlerWrapper(opentracing.GlobalTracer())),
 	)
 
 	// Initialise service
