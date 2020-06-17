@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"fmt"
+	"github.com/xiaobudongzhang/seata-golang/client/context"
 	"sync"
 )
 
@@ -15,7 +16,7 @@ type service struct {
 }
 
 type Service interface {
-	Sell(bookId, userId int64) (id int64, err error)
+	Sell(bookId, userId int64, ctx *context.RootContext) (id int64, err error)
 
 	Confirm(id int64, state int) (err error)
 }

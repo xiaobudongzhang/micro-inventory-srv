@@ -2,6 +2,11 @@ package inventory
 
 import (
 	"fmt"
+	"github.com/xiaobudongzhang/seata-golang/client"
+	"github.com/xiaobudongzhang/seata-golang/client/at/exec"
+	"github.com/xiaobudongzhang/seata-golang/client/at/sql/struct/cache"
+	"github.com/xiaobudongzhang/seata-golang/client/config"
+	"github.com/xiaobudongzhang/seata-golang/client/context"
 
 	"github.com/micro/go-micro/util/log"
 	"github.com/xiaobudongzhang/micro-basic/common"
@@ -9,17 +14,27 @@ import (
 	"github.com/xiaobudongzhang/micro-plugins/db"
 )
 
-func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
+func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (id int64, err error) {
 	log.Log("Sell")
-	tx, err := db.GetDB().Begin()
+	//tx, err := db.GetDB().Begin()
 
+	config.InitConf("D:\\micro\\micro-inventory-srv\\conf\\seate_client.yml")
+	client.NewRpcClient()
+	cache.SetTableMetaCache(cache.NewMysqlTableMetaCache(config.GetClientConfig().ATConfig.DSN))
+	exec.InitDataResourceManager()
+
+	db,err := exec.NewDB(config.GetClientConfig().ATConfig)
 	if err != nil {
+		panic(err)
+	}
+	tx2, err2 := db.Begin(ctx2)
+	if err2 != nil {
 		log.Logf("事务开启失败", err.Error())
 		return
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			tx2.Rollback()
 		}
 	}()
 
@@ -32,7 +47,7 @@ func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
 	var deductInv func() error
 
 	deductInv = func() (errIn error) {
-		errIn = tx.QueryRow(querySQL, bookId).Scan(&inv.Id, &inv.BookId, &inv.UnitPrice, &inv.Stock, &inv.Version)
+		errIn = db.QueryRow(querySQL, bookId).Scan(&inv.Id, &inv.BookId, &inv.UnitPrice, &inv.Stock, &inv.Version)
 		if errIn != nil {
 			log.Logf("查询失败 %s", errIn)
 			return errIn
@@ -44,7 +59,7 @@ func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
 			return errIn
 		}
 
-		r, errIn := tx.Exec(updateSQL, inv.Stock-1, inv.Version+1, bookId, inv.Version)
+		r, errIn := db.Exec(updateSQL, inv.Stock-1, inv.Version+1, bookId, inv.Version)
 		if errIn != nil {
 			log.Logf("更新数据库失败 %s", errIn)
 			return
@@ -64,14 +79,14 @@ func (s *service) Sell(bookId int64, userId int64) (id int64, err error) {
 	}
 
 	insertSQL := `insert inventory_history (book_id,user_id,state) value (?, ?, ?)`
-	r, err := tx.Exec(insertSQL, bookId, userId, common.InventoryHistoryStateNotOut)
+	r, err := db.Exec(insertSQL, bookId, userId, common.InventoryHistoryStateNotOut)
 	if err != nil {
 		log.Logf("新增销存记录失败 %s", err)
 		return
 	}
 	id, _ = r.LastInsertId()
 
-	tx.Commit()
+	tx2.Commit()
 	return
 }
 
