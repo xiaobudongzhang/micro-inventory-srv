@@ -38,11 +38,11 @@ func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (i
 		}
 	}()
 
-	querySQL := `select id,book_id,unit_price,stock,version from inventory where book_id = ?`
+	querySQL := `select id,book_id,unit_price,stock,version from micro_book_mall.inventory where book_id = ?`
 
 	inv := &proto.Inv{}
 
-	updateSQL := `update inventory set stock = ?, version = ? where book_id = ? and version = ?`
+	updateSQL := `update micro_book_mall.inventory set stock = ?, version = ? where book_id = ? and version = ?`
 
 	var deductInv func() error
 
@@ -78,7 +78,7 @@ func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (i
 		return
 	}
 
-	insertSQL := `insert inventory_history (book_id,user_id,state) value (?, ?, ?)`
+	insertSQL := `insert micro_book_mall.inventory_history (book_id,user_id,state) value (?, ?, ?)`
 	r, err := db.Exec(insertSQL, bookId, userId, common.InventoryHistoryStateNotOut)
 	if err != nil {
 		log.Logf("新增销存记录失败 %s", err)

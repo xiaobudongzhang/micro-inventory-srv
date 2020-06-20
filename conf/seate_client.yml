@@ -1,4 +1,4 @@
-application_id: "order-svc"
+application_id: "micro-inventory-srv"
 transaction_service_group: "127.0.0.1:8091"
 seata_version: "1.1.0"
 # tcp
@@ -30,7 +30,7 @@ tm:
   commit_retry_count: 5
   rollback_retry_count: 5
 at:
-  dsn: "root:666666@tcp(127.0.0.1:3308)/micro_book_mall2?timeout=1s&readTimeout=1s&writeTimeout=1s&parseTime=true&loc=Local&charset=utf8mb4,utf8"
+  dsn: "root:666666@tcp(127.0.0.1:3308)/micro_book_mall?timeout=1s&readTimeout=1s&writeTimeout=1s&parseTime=true&loc=Local&charset=utf8mb4,utf8"
   active: 10
   idle: 10
   idle_timeout: "4h"
