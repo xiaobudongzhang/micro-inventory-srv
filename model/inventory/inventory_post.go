@@ -2,9 +2,8 @@ package inventory
 
 import (
 	"fmt"
-	"github.com/xiaobudongzhang/seata-golang/client"
+	"github.com/bwmarrin/snowflake"
 	"github.com/xiaobudongzhang/seata-golang/client/at/exec"
-	"github.com/xiaobudongzhang/seata-golang/client/at/sql/struct/cache"
 	"github.com/xiaobudongzhang/seata-golang/client/config"
 	"github.com/xiaobudongzhang/seata-golang/client/context"
 
@@ -13,15 +12,18 @@ import (
 	proto "github.com/xiaobudongzhang/micro-inventory-srv/proto/inventory"
 	"github.com/xiaobudongzhang/micro-plugins/db"
 )
-
+func NextSnowflakeId() uint64 {
+	node, err := snowflake.NewNode(1)
+	if err != nil {
+		panic(err)
+	}
+	return uint64(node.Generate())
+}
 func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (id int64, err error) {
 	log.Log("Sell")
 	//tx, err := db.GetDB().Begin()
 
-	config.InitConf("D:\\micro\\micro-inventory-srv\\conf\\seate_client.yml")
-	client.NewRpcClient()
-	cache.SetTableMetaCache(cache.NewMysqlTableMetaCache(config.GetClientConfig().ATConfig.DSN))
-	exec.InitDataResourceManager()
+
 
 	db,err := exec.NewDB(config.GetClientConfig().ATConfig)
 	if err != nil {
@@ -78,8 +80,8 @@ func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (i
 		return
 	}
 
-	insertSQL := `insert micro_book_mall.inventory_history (book_id,user_id,state) value (?, ?, ?)`
-	r, err := db.Exec(insertSQL, bookId, userId, common.InventoryHistoryStateNotOut)
+	insertSQL := `insert into micro_book_mall.inventory_history (id,book_id,user_id,state) value (?,?, ?, ?)`
+	r, err := db.Exec(insertSQL,NextSnowflakeId(), bookId, userId, common.InventoryHistoryStateNotOut)
 	if err != nil {
 		log.Logf("新增销存记录失败 %s", err)
 		return

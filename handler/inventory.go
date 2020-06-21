@@ -2,6 +2,10 @@ package handler
 
 import (
 	"context"
+	"github.com/xiaobudongzhang/seata-golang/client"
+	"github.com/xiaobudongzhang/seata-golang/client/at/exec"
+	"github.com/xiaobudongzhang/seata-golang/client/at/sql/struct/cache"
+	"github.com/xiaobudongzhang/seata-golang/client/config"
 
 	"fmt"
 	"github.com/micro/go-micro/v2/util/log"
@@ -29,6 +33,10 @@ func (e *Service) Sell(ctx context.Context, req *proto.Request, rsp *proto.Respo
 	rex, erx:= metadata.FromContext(ctx)
 	fmt.Printf("meta:%v-%v", rex, erx)
 
+	config.InitConf("D:\\micro\\micro-inventory-srv\\conf\\seate_client.yml")
+	client.NewRpcClient()
+	cache.SetTableMetaCache(cache.NewMysqlTableMetaCache(config.GetClientConfig().ATConfig.DSN))
+	exec.InitDataResourceManager()
 
 	rootContext := &context2.RootContext{Context:ctx}
 	rootContext.Bind(rex["Xid"])
