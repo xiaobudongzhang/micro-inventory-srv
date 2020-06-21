@@ -61,7 +61,7 @@ func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (i
 			return errIn
 		}
 
-		r, errIn := db.Exec(updateSQL, inv.Stock-1, inv.Version+1, bookId, inv.Version)
+		r, errIn := tx2.Exec(updateSQL, inv.Stock-1, inv.Version+1, bookId, inv.Version)
 		if errIn != nil {
 			log.Logf("更新数据库失败 %s", errIn)
 			return
@@ -80,8 +80,8 @@ func (s *service) Sell(bookId int64, userId int64, ctx2 *context.RootContext) (i
 		return
 	}
 
-	insertSQL := `insert into micro_book_mall.inventory_history (id,book_id,user_id,state) value (?,?, ?, ?)`
-	r, err := db.Exec(insertSQL,NextSnowflakeId(), bookId, userId, common.InventoryHistoryStateNotOut)
+	insertSQL := `insert into micro_book_mall.inventory_history (id,book_id,user_id,state) values (?,?, ?, ?)`
+	r, err := tx2.Exec(insertSQL,NextSnowflakeId(), bookId, userId, common.InventoryHistoryStateNotOut)
 	if err != nil {
 		log.Logf("新增销存记录失败 %s", err)
 		return
